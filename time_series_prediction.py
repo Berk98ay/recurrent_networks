@@ -30,7 +30,7 @@ def get_data_set():
     passengers = []
 
     # check if the file exists:
-    if os.path.exists('AirPassenger.csv'):
+    if os.path.exists('AirPassengers.csv'):
         print("File 'AirPassengers.csv' found. Using real dataset.")
         # open the CSV file
         with open('AirPassengers.csv', mode='r') as file:
@@ -55,8 +55,8 @@ def get_data_set():
         input_tensor = torch.tensor(passengers[:-1]).unsqueeze(1)
         target_tensor = torch.tensor(passengers[1:]).unsqueeze(1)
         # make the input and target tensors float32:
-        # input_tensor = input_tensor.float()
-        # target_tensor = target_tensor.float()
+        input_tensor = input_tensor.float()
+        target_tensor = target_tensor.float()
     else:
         # make a dummy dataset, with a sine wave + linear ramp + noise
         print("File 'AirPassengers.csv' not found. Using dummy dataset.")
@@ -155,6 +155,7 @@ def run_training():
 
     # Option 3: Covariance-based loss (maximizes covariance)
     # criterion = covariance_loss
+
     input_size = 1
     hidden_size = 10
     output_size = 1
@@ -163,8 +164,11 @@ def run_training():
 
     # Prepare the data for training
     month, passengers, input_tensor, target_tensor = get_data_set()
-    target_tensor /= 100.0
-    ratio = 0.8
+
+    passenger_factor = 100.0
+    input_tensor /= passenger_factor
+    target_tensor /= passenger_factor
+    ratio = 0.5
     rnn = train(rnn, criterion, optimizer, input_tensor[:int(ratio * len(input_tensor))], target_tensor[:int(ratio * len(target_tensor))], n_epochs=1000)
     # Make predictions
     rnn.eval()
@@ -177,7 +181,7 @@ def run_training():
 
     # Plot the results
     plt.figure()
-    plt.plot(month[1:], passengers[1:], label='Actual')
+    plt.plot(month[1:], passengers[1:]/passenger_factor, label='Actual')
     plt.plot(month[1:], predictions, label='Predicted')
     plt.xlabel('Month')
     plt.ylabel('Number of Passengers')
